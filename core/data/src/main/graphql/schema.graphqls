@@ -1,0 +1,41 @@
+# GraphQL Schema wrapping NewsAPI.org
+# This schema is used by Apollo Kotlin to generate type-safe query classes.
+# You can self-host this with a simple Apollo Server / Express proxy,
+# or use the REST fallback (NewsApiService.kt) if you prefer.
+
+type Query {
+    topHeadlines(
+        country: String = "us"
+        category: String = "general"
+        page: Int = 1
+        pageSize: Int = 20
+    ): ArticleResponse!
+
+    searchArticles(
+        query: String!
+        page: Int = 1
+        pageSize: Int = 20
+    ): ArticleResponse!
+}
+
+type ArticleResponse {
+    status: String!
+    totalResults: Int!
+    articles: [Article!]!
+}
+
+type Article {
+    title: String!
+    description: String
+    content: String
+    url: String!
+    urlToImage: String
+    publishedAt: String!
+    source: Source!
+    author: String
+}
+
+type Source {
+    id: String
+    name: String!
+}

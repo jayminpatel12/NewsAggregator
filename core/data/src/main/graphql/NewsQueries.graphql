@@ -1,0 +1,39 @@
+query TopHeadlines($country: String!, $category: String!, $page: Int!, $pageSize: Int!) {
+    topHeadlines(country: $country, category: $category, page: $page, pageSize: $pageSize) {
+        status
+        totalResults
+        articles {
+            title
+            description
+            content
+            url
+            urlToImage
+            publishedAt
+            source {
+                id
+                name
+            }
+            author
+        }
+    }
+}
+
+query SearchArticles($query: String!, $page: Int!, $pageSize: Int!) {
+    searchArticles(query: $query, page: $page, pageSize: $pageSize) {
+        status
+        totalResults
+        articles {
+            title
+            description
+            content
+            url
+            urlToImage
+            publishedAt
+            source {
+                id
+                name
+            }
+            author
+        }
+    }
+}

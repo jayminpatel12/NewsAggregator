@@ -1,0 +1,25 @@
+# Android Studio / IntelliJ
+*.iml
+.idea/
+.gradle/
+local.properties
+/build/
+/app/build/
+/core/*/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.hprof
+
+# Project specific
+INTERVIEW_PREP.md
+graphql-server/node_modules/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Misc
+*.bak
+*.swp
+*.log
