@@ -101,4 +101,8 @@ class NewsRepositoryImpl @Inject constructor(
 
     override suspend fun getArticleById(id: String): Article? =
         articleDao.getArticleById(id)?.toDomain()
+
+    override suspend fun updateArticleSummary(id: String, summary: String) {
+        articleDao.updateAiSummary(id, summary)
+    }
 }

@@ -8,6 +8,7 @@ import com.jaymin.newsaggregator.core.common.util.Resource
 import com.jaymin.newsaggregator.core.domain.model.Article
 import com.jaymin.newsaggregator.core.domain.usecase.GetArticleByIdUseCase
 import com.jaymin.newsaggregator.core.domain.usecase.ToggleBookmarkUseCase
+import com.jaymin.newsaggregator.core.domain.usecase.UpdateArticleSummaryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,7 @@ data class ArticleDetailUiState(
     val summary: String = "",
     val hasSummary: Boolean = false,
     val isSummaryLoading: Boolean = false,
+    val isSummaryError: Boolean = false,
     val isLoading: Boolean = true,
     val error: String? = null
 )
@@ -31,7 +33,8 @@ class ArticleDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getArticleById: GetArticleByIdUseCase,
     private val geminiAiService: GeminiAiService,
-    private val toggleBookmark: ToggleBookmarkUseCase
+    private val toggleBookmark: ToggleBookmarkUseCase,
+    private val updateArticleSummary: UpdateArticleSummaryUseCase
 ) : ViewModel() {
 
     private val articleId: String = savedStateHandle["articleId"] ?: ""
@@ -73,11 +76,16 @@ class ArticleDetailViewModel @Inject constructor(
             geminiAiService.summarizeArticle(article).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        _uiState.update { it.copy(isSummaryLoading = true) }
+                        _uiState.update { it.copy(isSummaryLoading = true, isSummaryError = false) }
                     }
                     is Resource.Error -> {
                         _uiState.update {
-                            it.copy(isSummaryLoading = false, summary = "Could not generate summary.")
+                            it.copy(
+                                isSummaryLoading = false,
+                                summary = result.message,
+                                hasSummary = true,
+                                isSummaryError = true
+                            )
                         }
                     }
                     is Resource.Success -> {
@@ -85,9 +93,12 @@ class ArticleDetailViewModel @Inject constructor(
                             it.copy(
                                 isSummaryLoading = false,
                                 summary = result.data,
-                                hasSummary = true
+                                hasSummary = true,
+                                isSummaryError = false
                             )
                         }
+                        // Persist summary to database
+                        updateArticleSummary(article.id, result.data)
                     }
                 }
             }

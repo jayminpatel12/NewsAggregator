@@ -49,3 +49,11 @@ class ToggleBookmarkUseCase @Inject constructor(
         }
     }
 }
+
+class UpdateArticleSummaryUseCase @Inject constructor(
+    private val repository: NewsRepository
+) {
+    suspend operator fun invoke(id: String, summary: String) {
+        repository.updateArticleSummary(id, summary)
+    }
+}

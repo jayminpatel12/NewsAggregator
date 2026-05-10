@@ -8,23 +8,33 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF90CAF9),
-    secondary = Color(0xFFCE93D8),
-    tertiary = Color(0xFF80CBC4),
-    surface = Color(0xFF1C1B1F),
-    background = Color(0xFF121212)
+    primary = IndigoLight,
+    secondary = VioletLight,
+    tertiary = EmeraldLight,
+    surface = DarkSurface,
+    background = DarkBackground,
+    onPrimary = Neutral900,
+    onSecondary = Neutral900,
+    onTertiary = Neutral900,
+    onBackground = DarkOnSurface,
+    onSurface = DarkOnSurface
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1565C0),
-    secondary = Color(0xFF7B1FA2),
-    tertiary = Color(0xFF00897B),
-    surface = Color(0xFFFFFBFE),
-    background = Color(0xFFF5F5F5)
+    primary = IndigoPrimary,
+    secondary = VioletSecondary,
+    tertiary = EmeraldTertiary,
+    surface = Neutral50,
+    background = SurfaceTint,
+    onPrimary = Neutral50,
+    onSecondary = Neutral50,
+    onTertiary = Neutral50,
+    onBackground = Neutral900,
+    onSurface = Neutral900
 )
 
 @Composable
@@ -42,8 +52,14 @@ fun NewsAggregatorTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalAppSpacing provides AppSpacing(),
+        LocalAppShapes provides AppShapes(),
+        LocalAppGradients provides AppGradients()
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

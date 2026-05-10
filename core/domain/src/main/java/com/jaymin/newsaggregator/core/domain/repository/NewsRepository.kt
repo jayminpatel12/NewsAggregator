@@ -32,4 +32,6 @@ interface NewsRepository {
     suspend fun isBookmarked(articleId: String): Boolean
 
     suspend fun getArticleById(id: String): Article?
+
+    suspend fun updateArticleSummary(id: String, summary: String)
 }

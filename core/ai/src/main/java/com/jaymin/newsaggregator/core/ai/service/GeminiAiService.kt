@@ -1,6 +1,10 @@
 package com.jaymin.newsaggregator.core.ai.service
 
+import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.BlockThreshold
+import com.google.ai.client.generativeai.type.HarmCategory
+import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.jaymin.newsaggregator.core.common.util.Constants
 import com.jaymin.newsaggregator.core.common.util.Resource
@@ -22,7 +26,13 @@ class GeminiAiService @Inject constructor() {
     private val model by lazy {
         GenerativeModel(
             modelName = "gemini-1.5-flash",
-            apiKey = Constants.GEMINI_API_KEY
+            apiKey = Constants.GEMINI_API_KEY,
+            safetySettings = listOf(
+                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH),
+                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.ONLY_HIGH),
+                SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.ONLY_HIGH),
+                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.ONLY_HIGH)
+            )
         )
     }
 
@@ -34,7 +44,8 @@ class GeminiAiService @Inject constructor() {
         try {
             val prompt = buildString {
                 append("Summarize this news article in 2-3 concise sentences. ")
-                append("Focus on the key facts and implications.\n\n")
+                append("Focus on the key facts and implications. ")
+                append("If the content is insufficient, use the title and description to infer the summary.\n\n")
                 append("Title: ${article.title}\n")
                 article.description?.let { append("Description: $it\n") }
                 article.content?.let { append("Content: $it\n") }
@@ -42,10 +53,17 @@ class GeminiAiService @Inject constructor() {
             }
 
             val response = model.generateContent(content { text(prompt) })
-            val summary = response.text ?: "Unable to generate summary."
-            emit(Resource.Success(summary))
+            val summary = response.text
+            
+            if (summary != null) {
+                emit(Resource.Success(summary))
+            } else {
+                Log.e("GeminiAiService", "Empty response for article: ${article.title}")
+                emit(Resource.Error("Unable to generate summary at this time."))
+            }
         } catch (e: Exception) {
-            emit(Resource.Error("Summary failed: ${e.message}"))
+            Log.e("GeminiAiService", "Error summarizing article: ${article.title}", e)
+            emit(Resource.Error("Something went wrong. Please try again later."))
         }
     }
 
@@ -80,10 +98,17 @@ class GeminiAiService @Inject constructor() {
             }
 
             val response = model.generateContent(content { text(prompt) })
-            val insight = response.text ?: "Unable to generate overview."
-            emit(Resource.Success(insight))
+            val insight = response.text
+            
+            if (insight != null) {
+                emit(Resource.Success(insight))
+            } else {
+                Log.e("GeminiAiService", "Empty response for location overview: ${weather.cityName}")
+                emit(Resource.Error("Unable to generate overview."))
+            }
         } catch (e: Exception) {
-            emit(Resource.Error("Overview failed: ${e.message}"))
+            Log.e("GeminiAiService", "Error generating location overview", e)
+            emit(Resource.Error("Something went wrong. Please try again later."))
         }
     }
 }

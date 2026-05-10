@@ -25,9 +25,11 @@ data class HomeUiState(
     val briefing: String? = null,
     val isLoading: Boolean = true,
     val isBriefingLoading: Boolean = false,
+    val isBriefingError: Boolean = false,
     val error: String? = null,
     val cityName: String = "Loading...",
-    val lastSearchQuery: String = "Hamilton"
+    val lastSearchQuery: String = "Hamilton",
+    val suggestions: List<String> = emptyList()
 )
 
 @HiltViewModel
@@ -42,8 +44,27 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val popularCities = listOf(
+        "London", "New York", "Tokyo", "Paris", "Berlin", 
+        "Sydney", "Mumbai", "Toronto", "Dubai", "Singapore",
+        "Hamilton", "Auckland", "Wellington", "Christchurch"
+    )
+
     init {
         refresh()
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        val suggestions = if (query.isBlank()) {
+            emptyList()
+        } else {
+            popularCities.filter { it.contains(query, ignoreCase = true) }
+        }
+        _uiState.update { it.copy(suggestions = suggestions) }
+    }
+
+    fun clearSuggestions() {
+        _uiState.update { it.copy(suggestions = emptyList()) }
     }
 
     fun refresh() {
@@ -107,12 +128,16 @@ class HomeViewModel @Inject constructor(
 
     private fun generateBriefing(weather: Weather, articles: List<Article>) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isBriefingLoading = true) }
+            _uiState.update { it.copy(isBriefingLoading = true, isBriefingError = false) }
             geminiAiService.generateLocationOverview(weather, articles).collect { result ->
                 when (result) {
                     is Resource.Loading -> {}
-                    is Resource.Error -> _uiState.update { it.copy(isBriefingLoading = false) }
-                    is Resource.Success -> _uiState.update { it.copy(briefing = result.data, isBriefingLoading = false) }
+                    is Resource.Error -> _uiState.update { 
+                        it.copy(isBriefingLoading = false, briefing = result.message, isBriefingError = true) 
+                    }
+                    is Resource.Success -> _uiState.update { 
+                        it.copy(briefing = result.data, isBriefingLoading = false, isBriefingError = false) 
+                    }
                 }
             }
         }
