@@ -30,7 +30,7 @@ An Android app built with Kotlin and Jetpack Compose that combines news and weat
 
 3. Build and run in Android Studio.
 
-
+## Addint to portfolio website
 <!-- PORTFOLIO
 title: News Aggregator
 subtitle: News and Weather with AI Summary
