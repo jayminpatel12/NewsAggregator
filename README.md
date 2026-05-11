@@ -1,3 +1,14 @@
+<!-- PORTFOLIO
+title: News Aggregator
+subtitle: AI-Powered News & Weather App
+description: Real-time news app with AI summaries, offline reading, and infinite scroll.
+tags: Kotlin, Jetpack Compose, Hilt, Room, Paging 3, Gemini AI
+icon: 📰
+order: 1
+-->
+
+
+
 # NewsAggregator
 
 An Android app built with Kotlin and Jetpack Compose that combines news and weather. It uses Gemini to provide summaries and local briefings.
@@ -29,6 +40,7 @@ An Android app built with Kotlin and Jetpack Compose that combines news and weat
 2. Add them to `core/common/src/main/java/com/jaymin/newsaggregator/core/common/util/Constants.kt`.
 
 3. Build and run in Android Studio.
+
 
 ## License
 MIT
