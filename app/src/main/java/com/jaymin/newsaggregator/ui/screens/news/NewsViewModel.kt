@@ -8,39 +8,42 @@ import com.jaymin.newsaggregator.core.domain.model.Article
 import com.jaymin.newsaggregator.core.domain.usecase.GetTopHeadlinesUseCase
 import com.jaymin.newsaggregator.core.domain.usecase.SearchNewsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val getTopHeadlines: GetTopHeadlinesUseCase,
-    private val searchNews: SearchNewsUseCase
+    private val getTopHeadlinesUseCase: GetTopHeadlinesUseCase,
+    private val searchNewsUseCase: SearchNewsUseCase
 ) : ViewModel() {
 
-    private val _articles = MutableStateFlow<PagingData<Article>>(PagingData.empty())
-    val articles: StateFlow<PagingData<Article>> = _articles.asStateFlow()
+    private val _currentCategory = MutableStateFlow("general")
+    private val _searchQuery = MutableStateFlow<String?>(null)
 
-    init {
-        loadCategory("general")
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val articles: Flow<PagingData<Article>> = combine(
+        _currentCategory,
+        _searchQuery
+    ) { category, query ->
+        category to query
+    }.flatMapLatest { (category, query) ->
+        if (query.isNullOrBlank()) {
+            getTopHeadlinesUseCase(category = category)
+        } else {
+            searchNewsUseCase(query)
+        }
+    }.cachedIn(viewModelScope)
 
     fun loadCategory(category: String) {
-        viewModelScope.launch {
-            getTopHeadlines(category = category)
-                .cachedIn(viewModelScope)
-                .collectLatest { _articles.value = it }
-        }
+        _searchQuery.value = null
+        _currentCategory.value = category
     }
 
     fun searchNews(query: String) {
-        viewModelScope.launch {
-            searchNews.invoke(query)
-                .cachedIn(viewModelScope)
-                .collectLatest { _articles.value = it }
-        }
+        _searchQuery.value = query
     }
 }

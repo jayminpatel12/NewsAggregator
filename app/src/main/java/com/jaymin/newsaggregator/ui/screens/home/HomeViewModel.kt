@@ -29,7 +29,10 @@ data class HomeUiState(
     val error: String? = null,
     val cityName: String = "Loading...",
     val lastSearchQuery: String = "Hamilton",
-    val suggestions: List<String> = emptyList()
+    val suggestions: List<String> = emptyList(),
+    val categories: List<String> = listOf("All", "Tech", "Science", "Sports", "Business", "Health"),
+    val selectedCategory: String = "All",
+    val isWeatherExpanded: Boolean = true
 )
 
 @HiltViewModel
@@ -65,6 +68,39 @@ class HomeViewModel @Inject constructor(
 
     fun clearSuggestions() {
         _uiState.update { it.copy(suggestions = emptyList()) }
+    }
+
+    fun onCategorySelected(category: String) {
+        _uiState.update { it.copy(selectedCategory = category) }
+        // Fetch news for the selected category
+        val city = _uiState.value.weather?.cityName ?: _uiState.value.lastSearchQuery
+        val country = _uiState.value.weather?.country ?: "us"
+        
+        if (category == "All") {
+            fetchLocalNews(city, country)
+        } else {
+            fetchCategoryNews(category, country)
+        }
+    }
+
+    private fun fetchCategoryNews(category: String, country: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            // Using category as the query for local news
+            getNewsByLocation(query = category, country = country).collect { result ->
+                when (result) {
+                    is Resource.Loading -> {}
+                    is Resource.Error -> _uiState.update { it.copy(isLoading = false, error = result.message) }
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(localNews = result.data, isLoading = false) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun toggleWeatherExpanded() {
+        _uiState.update { it.copy(isWeatherExpanded = !it.isWeatherExpanded) }
     }
 
     fun refresh() {

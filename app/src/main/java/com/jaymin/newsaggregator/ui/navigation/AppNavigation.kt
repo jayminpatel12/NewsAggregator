@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jaymin.newsaggregator.ui.screens.bookmarks.BookmarksScreen
 import com.jaymin.newsaggregator.ui.screens.detail.ArticleDetailScreen
 import com.jaymin.newsaggregator.ui.screens.home.HomeScreen
 import com.jaymin.newsaggregator.ui.screens.news.NewsScreen
@@ -81,8 +82,7 @@ fun AppNavigation() {
                 WeatherScreen()
             }
             composable(Screen.Bookmarks.route) {
-                NewsScreen(
-                    showBookmarksOnly = true,
+                BookmarksScreen(
                     onArticleClick = { articleId ->
                         val encodedId = URLEncoder.encode(articleId, StandardCharsets.UTF_8.toString())
                         navController.navigate("article/$encodedId")
