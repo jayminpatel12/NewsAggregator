@@ -30,5 +30,17 @@ An Android app built with Kotlin and Jetpack Compose that combines news and weat
 
 3. Build and run in Android Studio.
 
+
+<!-- PORTFOLIO
+title: News Aggregator
+subtitle: News and Weather with AI Summary
+description: 
+tags: Kotlin, Jetpack Compose, Hilt, Room, Retrofit
+icon: 📱
+order: 1
+color: blue
+-->
+```
+
 ## License
 MIT
